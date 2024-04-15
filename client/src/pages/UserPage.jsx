@@ -14,6 +14,7 @@ import {
   AlertDescription,
 } from "@chakra-ui/react";
 import Groups from './Groups'
+import Users from './Users'
 import ScheduledMsgsList from '../components/ScheduledMsgsList'
 import Notification from '../components/Notifications'
 
@@ -62,6 +63,9 @@ const UserPage = () => {
   const handleGroups = async () => {
     navigate("/Groups");
   };
+  const handleUsers = async () => {
+    navigate("/Users");
+  };
 
   const handleLogout = async () => {
     // remove user from storage
@@ -96,6 +100,7 @@ const UserPage = () => {
             
             <ScheduledMsgsList className="navbar-button" ></ScheduledMsgsList>
             <Groups></Groups>
+            <Users></Users>
           </div>
           <div className="navbar-right">
             <Notification></Notification>

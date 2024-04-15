@@ -17,6 +17,7 @@ const{
     getUserNotifications,
     deleteNotification,
 } = require('../controllers/authController');
+const { getAllUsers } = require('../controllers/userController');
 
 
 router.route('/register').post(registerUser);
@@ -26,6 +27,8 @@ router.route('/login').post(loginUser);
 router.route('/logout').post(logout);
 
 router.route('/me').get(getUserProfile);
+
+router.route('/getAllUsers').get(getAllUsers);
 
 router.route('/saveNotification').post(saveNotification);
 
