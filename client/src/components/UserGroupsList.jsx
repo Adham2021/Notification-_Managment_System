@@ -41,19 +41,6 @@ const UserGroupsList = () => {
     //getLatestMessage();
   }, [groups]);
 
-
-
-  /*
-  useEffect(() => {
-    localStorage.setItem(
-      "group",
-      JSON.stringify({ groupId: openedGroup._id, groupName: openedGroup.groupName, users: openedGroup.users })
-    );
-    //getLatestMessage();
-  },[openedGroup]);
-*/
-
-  //get all the user groups from db and store them on groups
   const getUserGroups = async () => {
     try {
       const response = await axios.get(
@@ -72,19 +59,6 @@ const UserGroupsList = () => {
     }
   };
 
-
-
-  /*
-  //set the group data in the local storage
-  const openGroup = (groupId, groupName,groupUsers) => {
-    
-    localStorage.setItem(
-      "group",
-      JSON.stringify({ groupId: groupId, groupName: groupName, users: groupUsers })
-    );
-  };*/
-
-  //unfollow group
   const unfollorGroup = async (groupId) => {
     setShowChat(false);
     const response = await axios.post(
@@ -113,18 +87,6 @@ const UserGroupsList = () => {
 
   };
 
-
-
-
-  /*
-  //get the latest message
-  const getLatestMessage = () =>{
-    const response=axios.get('http://localhost:3001/api/v1/getLatestMessage',{groupId})
-    if(response){
-      setLatestMessage(response.data.latestMessage);
-    }
-
-  };*/
 
   return (
     <div className="myGroups_box">

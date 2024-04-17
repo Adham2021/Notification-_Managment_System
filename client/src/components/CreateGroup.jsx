@@ -34,6 +34,7 @@ const CreateGroup = () => {
     );
     setGroupExistErr(false);
     setShowErr(false);
+    handleFollow(); 
   }else{
     //alert("This name already exist")
     setGroupExistErr(true);

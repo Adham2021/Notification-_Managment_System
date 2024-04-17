@@ -13,12 +13,25 @@ import {
 } from "@chakra-ui/react";
 import { SearchIcon } from "@chakra-ui/icons";
 import CreateGroup from "../components/CreateGroup";
+import { useAuthContext } from "../hooks/useAuthComtext";
+
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [followedUsers, setFollowedUsers] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = React.useRef();
-
+  const {
+    user,
+    notification,
+    setNotification,
+    selectedGroup,
+    setSelectedGroup,
+    setShowChat,
+    socket,
+    setSocket,
+    IsGroupAdmin,
+    setIsGroupAdmin,groupSenders
+  } = useAuthContext();
   useEffect(() => {
     // Load followed users from localStorage on component mount
     const storedFollowedUsers = JSON.parse(
@@ -39,27 +52,56 @@ debugger
       });
   }, []);
 
-  const handleFollow = (userId) => {
-    // // Check if user is followed
-    // const isFollowed = followedUsers.includes(userId);
+  // const handleFollow = (userId) => {
+  //   // // Check if user is followed
+  //   // const isFollowed = followedUsers.includes(userId);
 
-    // if (isFollowed) {
-    //   // If user is followed, unfollow
-    //   const updatedFollowedUsers = followedUsers.filter((id) => id !== userId);
-    //   setFollowedUsers(updatedFollowedUsers);
-    //   localStorage.setItem("followedUsers", JSON.stringify(updatedFollowedUsers));
-    // } else {
-    //   // If user is not followed, follow
-    //   const updatedFollowedUsers = [...followedUsers, userId];
-    //   setFollowedUsers(updatedFollowedUsers);
-    //   localStorage.setItem("followedUsers", JSON.stringify(updatedFollowedUsers));
-    // }
-    // const response = await axios.post(
-    //     "http://localhost:3001/api/v1/createGroup",
-    //     { username ,user}
-    //   );
+  //   // if (isFollowed) {
+  //   //   // If user is followed, unfollow
+  //   //   const updatedFollowedUsers = followedUsers.filter((id) => id !== userId);
+  //   //   setFollowedUsers(updatedFollowedUsers);
+  //   //   localStorage.setItem("followedUsers", JSON.stringify(updatedFollowedUsers));
+  //   // } else {
+  //   //   // If user is not followed, follow
+  //   //   const updatedFollowedUsers = [...followedUsers, userId];
+  //   //   setFollowedUsers(updatedFollowedUsers);
+  //   //   localStorage.setItem("followedUsers", JSON.stringify(updatedFollowedUsers));
+  //   // }
+  //   // const response = await axios.post(
+  //   //     "http://localhost:3001/api/v1/createGroup",
+  //   //     { username ,user}
+  //   //   );
+  // };
+  const handleFollow = async () => {
+    try {
+      // Send a request to the server to get the ID of the user being followed
+      //const response = await axios.get("http://localhost:3001/api/v1/getUserId");
+      const userId = users._id;
+  
+      // Now you have the ID of the user being followed
+      // You can use the same logic as in the Users component to follow the user
+      // For example:
+      const isFollowed = followedUsers.includes(userId);
+      if (!isFollowed) {
+        const response = await axios.post(
+          "http://localhost:3001/api/v1/followUser",
+          { userId }
+        );
+        const newFollowedUsers = [...followedUsers, userId];
+        setFollowedUsers(newFollowedUsers); // Update followed users list
+        localStorage.setItem("followedUsers", JSON.stringify(newFollowedUsers));
+        //setShowChat(true); // Open chat
+      } else {
+        // User is already followed, handle accordingly
+      }
+    } catch (error) {
+      console.error("Error fetching user ID:", error);
+      // Handle error
+    }
   };
-
+  
+  
+  
   const columns = React.useMemo(
     () => [
       {
@@ -104,7 +146,7 @@ debugger
   return (
     <div className="searchInputDiv">
       <button onClick={onOpen}>
-        <SearchIcon className="searchIcon" boxSize={6} ref={btnRef} colorScheme="teal">
+        <SearchIcon className="searchIcon" boxSize={6} ref={btnRef}>
           Open
         </SearchIcon>
         Search user
