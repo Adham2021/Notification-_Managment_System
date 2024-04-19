@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useTable, usePagination, useGlobalFilter } from "react-table";
 import axios from "axios";
@@ -5,33 +6,39 @@ import "./Users.css";
 import {
   Drawer,
   DrawerBody,
+  DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
   DrawerContent,
   DrawerCloseButton,
   useDisclosure,
+  Button,
 } from "@chakra-ui/react";
 import { SearchIcon } from "@chakra-ui/icons";
-import CreateGroup from "../components/CreateGroup";
-import { useAuthContext } from "../hooks/useAuthComtext";
+
+//import CreateGroup from "../components/CreateGroup";
+//import { useAuthContext } from "../hooks/useAuthComtext";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [followedUsers, setFollowedUsers] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = React.useRef();
-  const {
-    user,
-    notification,
-    setNotification,
-    selectedGroup,
-    setSelectedGroup,
-    setShowChat,
-    socket,
-    setSocket,
-    IsGroupAdmin,
-    setIsGroupAdmin,groupSenders
-  } = useAuthContext();
+  const userData = JSON.parse(localStorage.getItem("user"));
+  const adminId = userData._id;
+
+  // const createUserArray=(adminId)=>{
+  //   axios
+  //   .post("http://localhost:3001/api/v1/followUser",{adminId})
+  //   .then((response) => {
+  //     JSON.parse(localStorage.setItemItem("followedUsers"))
+  //   })
+  //   .catch((error) => {
+  //     console.error("Error fetching users:", error);
+  //   });
+  // };
+
+  
   useEffect(() => {
     // Load followed users from localStorage on component mount
     const storedFollowedUsers = JSON.parse(
@@ -40,7 +47,6 @@ const Users = () => {
     if (storedFollowedUsers) {
       setFollowedUsers(storedFollowedUsers);
     }
-debugger
     // Fetch users from the server
     axios
       .get("http://localhost:3001/api/v1/getAllUsers")
@@ -51,56 +57,48 @@ debugger
         console.error("Error fetching users:", error);
       });
   }, []);
+  //createUserArray(adminId);
+  const handleFollow = (userId) => {
+    
 
-  // const handleFollow = (userId) => {
-  //   // // Check if user is followed
-  //   // const isFollowed = followedUsers.includes(userId);
-
-  //   // if (isFollowed) {
-  //   //   // If user is followed, unfollow
-  //   //   const updatedFollowedUsers = followedUsers.filter((id) => id !== userId);
-  //   //   setFollowedUsers(updatedFollowedUsers);
-  //   //   localStorage.setItem("followedUsers", JSON.stringify(updatedFollowedUsers));
-  //   // } else {
-  //   //   // If user is not followed, follow
-  //   //   const updatedFollowedUsers = [...followedUsers, userId];
-  //   //   setFollowedUsers(updatedFollowedUsers);
-  //   //   localStorage.setItem("followedUsers", JSON.stringify(updatedFollowedUsers));
-  //   // }
-  //   // const response = await axios.post(
-  //   //     "http://localhost:3001/api/v1/createGroup",
-  //   //     { username ,user}
-  //   //   );
-  // };
-  const handleFollow = async () => {
-    try {
-      // Send a request to the server to get the ID of the user being followed
-      //const response = await axios.get("http://localhost:3001/api/v1/getUserId");
-      const userId = users._id;
-  
-      // Now you have the ID of the user being followed
-      // You can use the same logic as in the Users component to follow the user
-      // For example:
-      const isFollowed = followedUsers.includes(userId);
-      if (!isFollowed) {
-        const response = await axios.post(
-          "http://localhost:3001/api/v1/followUser",
-          { userId }
+    if(followedUsers.includes(userId)){
+      axios
+      .put("http://localhost:3001/api/v1/RemoveUserFromUser1", {
+        adminId,
+        userId,
+      })
+      .then(() => {
+        // Update the state
+        setFollowedUsers(followedUsers.filter((id) => id !== userId));
+        // Update localStorage
+        localStorage.setItem(
+          "followedUsers",
+          JSON.stringify(followedUsers.filter((id) => id !== userId))
         );
-        const newFollowedUsers = [...followedUsers, userId];
-        setFollowedUsers(newFollowedUsers); // Update followed users list
-        localStorage.setItem("followedUsers", JSON.stringify(newFollowedUsers));
-        //setShowChat(true); // Open chat
-      } else {
-        // User is already followed, handle accordingly
-      }
-    } catch (error) {
-      console.error("Error fetching user ID:", error);
-      // Handle error
+      })
+      .catch((error) => {
+        console.error("Error removing user from user1:", error);
+      });
+    } else {
+      // If the group is not followed, follow it
+      axios
+        .put("http://localhost:3001/api/v1/UpdateUser1", { adminId, userId })
+        .then(() => {
+          // Update the state
+          setFollowedUsers([...followedUsers, userId]);
+          // Update localStorage
+          localStorage.setItem(
+            "followedUsers",
+            JSON.stringify([...followedUsers, userId])
+          );
+        })
+        .catch((error) => {
+          console.error("Error updating user:", error);
+        });
     }
+
   };
-  
-  
+
   
   const columns = React.useMemo(
     () => [
@@ -120,7 +118,7 @@ debugger
             }
             onClick={() => handleFollow(row.original._id)}
           >
-            {followedUsers.includes(row.original._id) ? "Unfollow" : "Follow"}
+            {`followedUsers`.includes(row.original._id) ? "Unfollow" : "Follow"}
           </button>
         ),
       },
@@ -134,10 +132,18 @@ debugger
     headerGroups,
     rows,
     prepareRow,
+    state: { pageIndex, pageSize },
+    setGlobalFilter,
+    nextPage,
+    previousPage,
+    canNextPage,
+    canPreviousPage,
+    pageCount,
   } = useTable(
     {
       columns,
       data: users,
+      initialState: { pageIndex: 0, pageSize: 10 }, // Initial page index and page size
     },
     useGlobalFilter,
     usePagination
